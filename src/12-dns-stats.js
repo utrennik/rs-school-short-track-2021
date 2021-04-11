@@ -20,8 +20,35 @@
  * }
  *
  */
-function getDNSStats(/* domains */) {
-  throw new Error('Not implemented');
+function getDNSStats(domains) {
+  const db = {};
+
+  function addToDb(d) {
+    if (`.${d}` in db) {
+      db[`.${d}`] += 1;
+    } else {
+      db[`.${d}`] = 1;
+    }
+  }
+
+  function extractDomain(subdomains) {
+    if (subdomains.length === 0) return null;
+    const subdomainsArr = subdomains.split('.');
+
+    // add whole subdomain
+    addToDb(subdomainsArr.join('.'));
+
+    // add all subparts
+    // console.log(`subdomainsArr: ${subdomainsArr}`);
+
+    // add all variants
+    return extractDomain(subdomainsArr.slice(0, subdomainsArr.length - 1).join('.'));
+  }
+
+  domains.forEach((d) => extractDomain(d.split('.').reverse().join('.')));
+  return db;
 }
+
+// console.log(getDNSStats(['code.yandex.ru', 'music.yandex.ru', 'yandex.ru']));
 
 module.exports = getDNSStats;
